@@ -11,6 +11,8 @@ class DocumentsViewController: UIViewController, UITableViewDataSource, UITableV
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.searchController = searchController
+        definesPresentationContext = true
         
         documentsTableView.dataSource = self
         documentsTableView.delegate = self
@@ -21,11 +23,9 @@ class DocumentsViewController: UIViewController, UITableViewDataSource, UITableV
         
         searchController.searchResultsUpdater = self as? UISearchResultsUpdating
         searchController.searchBar.delegate = self as? UISearchBarDelegate
-        searchController.obscuresBackgroundDuringPresentation = false
-        searchController.searchBar.placeholder = "Search"
+
         
-        navigationItem.searchController = searchController
-        definesPresentationContext = true
+      
         
         searchController.searchBar.scopeButtonTitles = SearchScope.titles
     }
@@ -51,12 +51,12 @@ class DocumentsViewController: UIViewController, UITableViewDataSource, UITableV
         }
         let managedContext = appDelegate.persistentContainer.viewContext
         let fetchRequest: NSFetchRequest<Document> = Document.fetchRequest()
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)] // order results by document name ascending
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)] 
         
         do {
             documents = try managedContext.fetch(fetchRequest)
         } catch {
-            alertNotifyUser(message: "Fetch for documents could not be performed.")
+            alertNotifyUser(message: "Failed")
             return
         }
     }
@@ -68,18 +68,18 @@ class DocumentsViewController: UIViewController, UITableViewDataSource, UITableV
         do {
             if query != "" {
                 switch scope {
-                case .Both:
-                    fetchRequest.predicate = NSPredicate(format: "name contains[c] %@ OR content contains[c] %@", query, query)
                 case .Title:
                     fetchRequest.predicate = NSPredicate(format: "name contains[c] %@", query)
                 case.Content:
                     fetchRequest.predicate = NSPredicate(format:"content contains[c] %@", query)
+                case .Both:
+                    fetchRequest.predicate = NSPredicate(format: "name contains[c] %@ OR content contains[c] %@", query, query)
                 }
             }
             documents = try context.fetch(fetchRequest)
             documentsTableView.reloadData()
         } catch {
-            print("Failed to fetch document data: \(error.localizedDescription)")
+            print(error.localizedDescription)
         }
     }
     
